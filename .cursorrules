@@ -1,0 +1,10 @@
+# Project rules
+
+- Use pnpm to install dependencies.
+- Nuxt autoimports are enabled, no need to import components manually.
+- Use tailwindcss for styling.
+- Use semantic colors.
+- Don't use any local images, use any image from the internet.
+- The pages should be composed of components with parameters that accept the copy.
+- The html should be in the components.
+- When needed, use shadcn-vue components.
