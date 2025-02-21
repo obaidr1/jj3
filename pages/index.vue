@@ -1,6 +1,5 @@
 <template>
-  <LandingHero
-    title="Welcome to Design Starter Kit"
-    description="See README.md to get started"
-  />
+  <main>
+    <h1>Welcome to my app</h1>
+  </main>
 </template>
