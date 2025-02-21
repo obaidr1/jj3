@@ -1,9 +1,13 @@
 <script setup lang="ts">
 const auth = useAuth()
+const competitions = useCompetitions()
 
-// Check authentication on app start
-onMounted(async () => {
-  await auth.checkAuth()
+// Initialize stores on client side only
+onMounted(() => {
+  if (process.client) {
+    auth.initializeFromStorage()
+    competitions.initializeFromStorage()
+  }
 })
 </script>
 

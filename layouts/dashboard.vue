@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const auth = useAuth()
+const router = useRouter()
 
 const navigation = computed(() => {
   const items = [
@@ -8,7 +9,7 @@ const navigation = computed(() => {
 
   if (auth.isOrganizer) {
     items.push(
-      { name: 'Competitions', href: '/dashboard/competitions', icon: 'i-heroicons-trophy' },
+      { name: 'Competitions', href: '/competitions', icon: 'i-heroicons-trophy' },
       { name: 'Judges', href: '/dashboard/judges', icon: 'i-heroicons-users' }
     )
   }
@@ -28,17 +29,28 @@ const navigation = computed(() => {
 
   return items
 })
+
+async function handleLogout() {
+  try {
+    await auth.logout()
+    await router.push('/login')
+  } catch (error) {
+    console.error('Logout failed:', error)
+  }
+}
 </script>
 
 <template>
-  <div class="min-h-screen bg-background">
-    <nav class="border-b">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex h-16 justify-between">
+  <div class="min-h-screen bg-gray-100">
+    <nav class="bg-white shadow">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
           <div class="flex">
-            <div class="flex flex-shrink-0 items-center">
-              <h1 class="text-xl font-bold">J&J Competition</h1>
-            </div>
+            <NuxtLink to="/dashboard" class="flex-shrink-0 flex items-center">
+              <span class="text-xl font-bold">Dashboard</span>
+            </NuxtLink>
+            
+            <!-- Navigation Menu -->
             <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
               <NuxtLink
                 v-for="item in navigation"
@@ -52,26 +64,21 @@ const navigation = computed(() => {
               </NuxtLink>
             </div>
           </div>
-          <div class="flex items-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Button variant="ghost">
-                  {{ auth.user?.name }}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem @click="auth.logout">
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          
+          <div class="flex items-center space-x-4">
+            <span class="text-sm text-gray-500">{{ auth.user?.name }}</span>
+            <Button variant="ghost" @click="handleLogout">
+              Logout
+            </Button>
           </div>
         </div>
       </div>
     </nav>
-
-    <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-      <slot />
+    
+    <main class="py-10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <slot />
+      </div>
     </main>
   </div>
 </template> 

@@ -1,9 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  css: ['~/assets/css/main.css'],
+  css: [
+    '~/assets/css/main.css'
+  ],
   build: {
-    transpile: ['vee-validate'],
+    transpile: ['vee-validate']
   },
 
   postcss: {
@@ -24,12 +26,7 @@ export default defineNuxtConfig({
     '@nuxtjs/google-fonts',
     '@nuxt/content',
   ],
-  components: [
-    {
-      path: '~/components',
-      pathPrefix: false,
-    },
-  ],
+  components: true,
   colorMode: {
     classSuffix: '',
     preference: 'light',
@@ -58,5 +55,8 @@ export default defineNuxtConfig({
         baseUrl: '.',
       },
     },
+  },
+  pinia: {
+    autoImports: ['defineStore', 'storeToRefs']
   },
 })

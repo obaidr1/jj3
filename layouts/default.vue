@@ -1,12 +1,15 @@
+<script setup lang="ts">
+// Remove any toast imports if they exist
+</script>
+
 <template>
-  <div class="min-h-screen flex flex-col">
+  <div class="min-h-screen bg-background text-foreground">
     <AppNavigation />
-    <main class="flex-1">
+    <PrototypeBanner />
+    <main>
       <slot />
     </main>
     <LandingFooter />
-    <PrototypeBanner />
-    <DialogProvider />
     <CookieConsent />
   </div>
 </template>

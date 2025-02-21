@@ -6,16 +6,16 @@ definePageMeta({
 
 const competitions = useCompetitions()
 
-onMounted(async () => {
-  await competitions.fetchDancerCompetitions()
+onMounted(() => {
+  competitions.fetchCompetitions()
 })
 
 const upcomingCompetitions = computed(() => 
-  competitions.dancerCompetitions.filter(c => c.status === 'upcoming')
+  competitions.competitions.filter(c => c.status === 'upcoming')
 )
 
 const pastCompetitions = computed(() => 
-  competitions.dancerCompetitions.filter(c => c.status === 'completed')
+  competitions.competitions.filter(c => c.status === 'completed')
 )
 </script>
 
@@ -28,15 +28,17 @@ const pastCompetitions = computed(() =>
       </Button>
     </div>
 
-    <LoadingSpinner v-if="competitions.loading" />
+    <div v-if="competitions.loading" class="text-center py-8">
+      Loading...
+    </div>
     
-    <Alert v-if="competitions.error" variant="destructive">
+    <Alert v-else-if="competitions.error" variant="destructive">
       {{ competitions.error }}
     </Alert>
 
-    <template v-if="!competitions.loading && !competitions.error">
+    <template v-else>
       <div class="space-y-6">
-        <h2 class="text-xl font-semibold">Upcoming Competitions</h2>
+        <h2 class="text-xl font-semibold">Available Competitions</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card v-for="comp in upcomingCompetitions" :key="comp.id">
             <CardHeader>
@@ -44,14 +46,12 @@ const pastCompetitions = computed(() =>
               <CardDescription>{{ new Date(comp.date).toLocaleDateString() }}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p>Round: {{ comp.round }}</p>
-              <p v-if="comp.partners?.length">
-                Partners: {{ comp.partners.join(', ') }}
-              </p>
+              <p class="text-sm text-gray-500">Location: {{ comp.location }}</p>
+              <p class="text-sm text-gray-500">Max Dancers: {{ comp.maxDancers }}</p>
             </CardContent>
             <CardFooter>
               <Button variant="outline" @click="navigateTo(`/competitions/${comp.id}`)">
-                View Details
+                Register Now
               </Button>
             </CardFooter>
           </Card>
@@ -65,7 +65,7 @@ const pastCompetitions = computed(() =>
               <CardDescription>{{ new Date(comp.date).toLocaleDateString() }}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p>Final Placement: {{ comp.placement || 'N/A' }}</p>
+              <p class="text-sm text-gray-500">Location: {{ comp.location }}</p>
             </CardContent>
             <CardFooter>
               <Button variant="outline" @click="navigateTo(`/competitions/${comp.id}`)">

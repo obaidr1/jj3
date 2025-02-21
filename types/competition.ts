@@ -1,0 +1,8 @@
+export enum DanceStyle {
+  BACHATA = 'BACHATA',
+  ZOUK = 'ZOUK',
+  WESTCOAST_SWING = 'WESTCOAST_SWING',
+  SALSA = 'SALSA',
+  KIZOMBA = 'KIZOMBA',
+  OTHER = 'OTHER'
+} 

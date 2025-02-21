@@ -1,5 +1,4 @@
-import animate from 'tailwindcss-animate'
-import typography from '@tailwindcss/typography'
+import type { Config } from 'tailwindcss'
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -8,13 +7,8 @@ export default {
     './pages/**/*.{ts,tsx,vue}',
     './components/**/*.{ts,tsx,vue}',
     './app/**/*.{ts,tsx,vue}',
-    './src/**/*.{ts,tsx,vue}',
-    './components/**/*.{js,vue,ts}',
+    './content/**/*.{md,yml,json,yaml,toml,xml}',
     './layouts/**/*.vue',
-    './pages/**/*.vue',
-    './plugins/**/*.{js,ts}',
-    './app.vue',
-    './error.vue',
   ],
   prefix: '',
   theme: {
@@ -81,12 +75,12 @@ export default {
       },
       keyframes: {
         'accordion-down': {
-          from: { height: 0 },
+          from: { height: '0' },
           to: { height: 'var(--radix-accordion-content-height)' },
         },
         'accordion-up': {
           from: { height: 'var(--radix-accordion-content-height)' },
-          to: { height: 0 },
+          to: { height: '0' },
         },
         blob: {
           '0%': {
@@ -172,5 +166,8 @@ export default {
       },
     },
   },
-  plugins: [typography(), animate()],
-}
+  plugins: [
+    require('tailwindcss-animate'),
+    require('@tailwindcss/typography')
+  ]
+} satisfies Config

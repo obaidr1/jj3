@@ -6,55 +6,41 @@ definePageMeta({
 
 const competitions = useCompetitions()
 
-onMounted(async () => {
-  await competitions.fetchJudgeAssignments()
+onMounted(() => {
+  competitions.fetchCompetitions()
 })
-
-const activeAssignments = computed(() => 
-  competitions.judgeAssignments.filter(a => 
-    ['pending', 'in_progress'].includes(a.status)
-  )
-)
-
-const completedAssignments = computed(() => 
-  competitions.judgeAssignments.filter(a => a.status === 'completed')
-)
 </script>
 
 <template>
   <div class="space-y-8">
-    <h1 class="text-2xl font-bold">Judging Assignments</h1>
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-bold">Judge Dashboard</h1>
+    </div>
 
-    <LoadingSpinner v-if="competitions.loading" />
+    <div v-if="competitions.loading" class="text-center py-8">
+      Loading...
+    </div>
     
-    <Alert v-if="competitions.error" variant="destructive">
+    <Alert v-else-if="competitions.error" variant="destructive">
       {{ competitions.error }}
     </Alert>
 
-    <template v-if="!competitions.loading && !competitions.error">
+    <template v-else>
       <div class="space-y-6">
-        <h2 class="text-xl font-semibold">Active Assignments</h2>
+        <h2 class="text-xl font-semibold">Assigned Competitions</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card v-for="assignment in activeAssignments" :key="assignment.id">
+          <Card v-for="comp in competitions.competitions" :key="comp.id">
             <CardHeader>
-              <CardTitle>{{ assignment.competitionName }}</CardTitle>
-              <CardDescription>{{ new Date(assignment.date).toLocaleDateString() }}</CardDescription>
+              <CardTitle>{{ comp.name }}</CardTitle>
+              <CardDescription>{{ new Date(comp.date).toLocaleDateString() }}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div class="space-y-2">
-                <p>Round: {{ assignment.round }}</p>
-                <p>Status: {{ assignment.status }}</p>
-                <p v-if="assignment.status === 'in_progress'">
-                  Progress: {{ assignment.completedPairs }}/{{ assignment.pairsToJudge }} pairs
-                </p>
-              </div>
+              <p class="text-sm text-gray-500">Location: {{ comp.location }}</p>
+              <p class="text-sm text-gray-500">Status: {{ comp.status }}</p>
             </CardContent>
             <CardFooter>
-              <Button 
-                variant="outline" 
-                @click="navigateTo(`/competitions/${assignment.competitionId}/judge`)"
-              >
-                {{ assignment.status === 'pending' ? 'Start Judging' : 'Continue Judging' }}
+              <Button variant="outline" @click="navigateTo(`/competitions/${comp.id}/judge`)">
+                Start Judging
               </Button>
             </CardFooter>
           </Card>

@@ -4,65 +4,33 @@ definePageMeta({
   middleware: ['auth']
 })
 
+const router = useRouter()
 const auth = useAuth()
+const competitions = useCompetitions()
 
-// Redirect to role-specific dashboard
 onMounted(() => {
-  switch (auth.user?.role) {
-    case UserRole.DANCER:
-      navigateTo('/dashboard/dancer')
-      break
-    case UserRole.ORGANIZER:
-      navigateTo('/dashboard/organizer')
-      break
-    case UserRole.JUDGE:
-      navigateTo('/dashboard/judge')
-      break
-    case UserRole.ADMIN:
-      navigateTo('/dashboard/admin')
-      break
+  // Redirect dancers to available competitions
+  if (auth.isDancer) {
+    router.push('/competitions')
   }
 })
 </script>
 
 <template>
-  <div>
-    <h1 class="text-2xl font-bold mb-6">Welcome, {{ auth.user?.name }}</h1>
+  <div class="max-w-4xl mx-auto py-8 px-4">
+    <h1 class="text-2xl font-bold mb-8">Dashboard</h1>
     
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Different cards based on user role -->
-      <template v-if="auth.isOrganizer">
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Competitions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <!-- Competition stats -->
-          </CardContent>
-        </Card>
-      </template>
-
-      <template v-if="auth.isDancer">
-        <Card>
-          <CardHeader>
-            <CardTitle>Upcoming Events</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <!-- Upcoming competitions -->
-          </CardContent>
-        </Card>
-      </template>
-
-      <template v-if="auth.isJudge">
-        <Card>
-          <CardHeader>
-            <CardTitle>Judging Schedule</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <!-- Judging assignments -->
-          </CardContent>
-        </Card>
-      </template>
+    <!-- Show different content based on user role -->
+    <div v-if="auth.isOrganizer">
+      <NuxtLink to="/dashboard/organizer">
+        Go to Organizer Dashboard
+      </NuxtLink>
+    </div>
+    
+    <div v-else-if="auth.isJudge">
+      <NuxtLink to="/dashboard/judge">
+        Go to Judge Dashboard
+      </NuxtLink>
     </div>
   </div>
 </template> 
