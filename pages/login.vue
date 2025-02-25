@@ -19,7 +19,7 @@ async function handleLogin() {
     
     // Redirect based on role
     if (auth.isOrganizer) {
-      router.push('/dashboard/organizer/dashboard_overview')
+      router.push('/dashboard/organizer')
     } else if (auth.isJudge) {
       router.push('/dashboard/judge')
     } else if (auth.isDancer) {

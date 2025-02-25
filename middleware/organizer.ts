@@ -16,11 +16,4 @@ export default defineNuxtRouteMiddleware((to, from) => {
   if (auth.user?.role !== 'ORGANIZER') {
     return navigateTo('/dashboard')
   }
-
-  if (auth.isOrganizer) {
-    // Update default redirect
-    if (to.path === '/dashboard/organizer/dashboard_overview') {
-      return navigateTo('/dashboard/organizer')
-    }
-  }
 }) 

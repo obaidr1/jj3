@@ -38,7 +38,7 @@ async function handleSubmit() {
     error.value = null
 
     await competitions.createCompetition(form.value)
-    router.push('/dashboard/organizer/dashboard_overview')
+    router.push('/dashboard/organizer')
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Failed to create competition'
   } finally {
