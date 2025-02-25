@@ -7,6 +7,7 @@ onMounted(() => {
   if (process.client) {
     auth.initializeFromStorage()
     competitions.initializeFromStorage()
+    competitions.migrateExistingDeadlines()
   }
 })
 </script>

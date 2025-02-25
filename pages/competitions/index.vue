@@ -11,7 +11,9 @@ const router = useRouter()
 const competitions = useCompetitions()
 
 onMounted(() => {
-  competitions.fetchCompetitions()
+  if (competitions.competitions.length === 0) {
+    competitions.initializeFromStorage()
+  }
 })
 
 // Helper function to format dance style
@@ -66,8 +68,8 @@ function handleImageError(event: Event) {
 </script>
 
 <template>
-  <div class="space-y-8">
-    <div class="flex justify-between items-center">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
       <h1 class="text-2xl font-bold">Available Competitions</h1>
     </div>
 
@@ -79,20 +81,17 @@ function handleImageError(event: Event) {
       {{ competitions.error }}
     </Alert>
 
-    <template v-else>
-      <div class="space-y-6">
-        <div v-if="competitions.competitions.length === 0" class="text-center py-8 text-gray-500">
-          No competitions available at the moment.
-        </div>
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <CompetitionCard 
-            v-for="comp in competitions.competitions" 
-            :key="comp.id"
-            :competition="comp"
-          />
-        </div>
-      </div>
-    </template>
+    <div v-else-if="competitions.competitions.length === 0" class="text-center py-8">
+      <p class="text-gray-500">No competitions available at the moment.</p>
+    </div>
+
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <CompetitionCard 
+        v-for="comp in competitions.competitions" 
+        :key="comp.id"
+        :competition="comp"
+      />
+    </div>
   </div>
 </template>
 

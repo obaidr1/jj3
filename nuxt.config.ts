@@ -35,10 +35,13 @@ export default defineNuxtConfig({
     storageKey: 'nuxt-color-mode',
   },
   googleFonts: {
-    download: true,
+    families: {
+      Inter: [400, 500, 600, 700],
+    },
     display: 'swap',
     prefetch: true,
     preconnect: true,
+    preload: true,
   },
   shadcn: {
     prefix: '',
@@ -59,4 +62,19 @@ export default defineNuxtConfig({
   pinia: {
     autoImports: ['defineStore', 'storeToRefs']
   },
+  plugins: [
+    '~/plugins/pinia.ts',
+    '~/plugins/competitions.ts'
+  ],
+  vite: {
+    server: {
+      hmr: {
+        protocol: 'ws'
+      }
+    }
+  },
+  devServer: {
+    port: 3000,
+    host: 'localhost'
+  }
 })

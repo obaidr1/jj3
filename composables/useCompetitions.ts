@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { useAuth } from '../composables/useAuth'
+import { DanceStyle } from '~/types/competition'
 
 interface Competition {
   id: string
@@ -10,7 +11,10 @@ interface Competition {
   currentRound: number
   status: 'upcoming' | 'ongoing' | 'completed'
   description: string
-  registrationDeadline: Date
+  registrationDeadline: {
+    date: Date,
+    time: string // Format: "HH:mm"
+  }
   entryFee: number
   rules: string
   rounds: number
@@ -64,18 +68,70 @@ interface CreateCompetitionData {
   }
 }
 
-// Simulate database storage
-const COMPETITIONS_STORAGE_KEY = 'competitions'
+// Test data
+const DEFAULT_COMPETITIONS = [
+  {
+    id: 'test1',
+    name: 'Bachata Masters',
+    date: new Date('2024-06-15'),
+    location: 'Munich',
+    danceStyle: DanceStyle.BACHATA,
+    status: 'upcoming',
+    maxDancers: 100,
+    description: 'Join us for the biggest Bachata competition in Munich!',
+    registrationDeadline: {
+      date: new Date('2024-06-01'),
+      time: '23:59'
+    },
+    entryFee: 50,
+    rules: 'Standard competition rules apply',
+    rounds: 3,
+    organizerId: '1', // matches test user id
+    banner: 'https://placehold.co/600x400/png?text=Bachata+Competition',
+    paymentMethods: {
+      paypal: true,
+      stripe: true,
+      cash: true
+    },
+    registrations: [],
+    updatedAt: new Date()
+  },
+  {
+    id: 'test2',
+    name: 'Salsa Championship',
+    date: new Date('2024-07-20'),
+    location: 'Berlin',
+    danceStyle: DanceStyle.SALSA,
+    status: 'upcoming',
+    maxDancers: 0, // unlimited
+    description: 'The ultimate Salsa showdown!',
+    registrationDeadline: {
+      date: new Date('2024-07-01'),
+      time: '23:59'
+    },
+    entryFee: 75,
+    rules: 'Professional division rules apply',
+    rounds: 4,
+    organizerId: '1',
+    banner: 'https://placehold.co/600x400/png?text=Salsa+Competition',
+    paymentMethods: {
+      paypal: true,
+      stripe: true,
+      cash: true
+    },
+    registrations: [],
+    updatedAt: new Date()
+  }
+]
 
 export const useCompetitions = defineStore('competitions', {
   state: () => ({
-    competitions: [] as Competition[],
+    competitions: [] as any[],
     loading: false,
     error: null as string | null
   }),
 
   getters: {
-    // Add getter for organizer's competitions
     organizerCompetitions: (state) => {
       const auth = useAuth()
       return state.competitions.filter(comp => comp.organizerId === auth.user?.id)
@@ -83,63 +139,35 @@ export const useCompetitions = defineStore('competitions', {
   },
 
   actions: {
-    // Load competitions from localStorage
     initializeFromStorage() {
-      const stored = localStorage.getItem(COMPETITIONS_STORAGE_KEY)
-      if (stored) {
-        const competitions = JSON.parse(stored)
-        // Convert string dates back to Date objects and ensure payment methods are booleans
-        this.competitions = competitions.map((comp: Competition) => ({
-          ...comp,
-          date: new Date(comp.date),
-          registrationDeadline: new Date(comp.registrationDeadline),
-          paymentMethods: {
-            paypal: Boolean(comp.paymentMethods?.paypal),
-            stripe: Boolean(comp.paymentMethods?.stripe),
-            cash: Boolean(comp.paymentMethods?.cash)
-          }
-        }))
-      }
+      const stored = localStorage.getItem('competitions')
+      this.competitions = stored ? JSON.parse(stored) : DEFAULT_COMPETITIONS
+      this.saveToStorage()
     },
 
-    // Save competitions to localStorage
     saveToStorage() {
-      try {
-        localStorage.setItem(COMPETITIONS_STORAGE_KEY, JSON.stringify(this.competitions))
-      } catch (error) {
-        console.error('Failed to save to storage:', error)
-        // If storage fails, try to remove old items or compress data
-        if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-          // Remove old competitions or compress images
-          this.cleanupStorage()
-        }
-      }
+      localStorage.setItem('competitions', JSON.stringify(this.competitions))
     },
 
-    cleanupStorage() {
+    getCompetitionById(id: string) {
       try {
-        // Keep only the most recent competitions
-        const maxCompetitions = 10
-        if (this.competitions.length > maxCompetitions) {
-          this.competitions = this.competitions.slice(-maxCompetitions)
+        const competition = this.competitions.find(c => c.id === id)
+        if (!competition) {
+          console.error(`Competition with id ${id} not found. Available IDs:`, 
+            this.competitions.map(c => c.id).join(', '))
+          return null
         }
-        // Try saving again
-        localStorage.setItem(COMPETITIONS_STORAGE_KEY, JSON.stringify(this.competitions))
+        return competition
       } catch (error) {
-        console.error('Failed to cleanup storage:', error)
+        console.error('Error getting competition:', error)
+        return null
       }
     },
 
     async fetchCompetitions() {
-      this.loading = true
-      try {
-        await new Promise(resolve => setTimeout(resolve, 100)) // Simulate network delay
-        this.initializeFromStorage()
-      } catch (error) {
-        this.error = 'Failed to fetch competitions'
-      } finally {
-        this.loading = false
-      }
+      // In a real app, this would be an API call
+      // For now, we're using the sample data from state
+      return this.organizerCompetitions
     },
 
     async createCompetition(data: CreateCompetitionData) {
@@ -156,7 +184,10 @@ export const useCompetitions = defineStore('competitions', {
           currentRound: 0,
           status: 'upcoming',
           description: data.description,
-          registrationDeadline: new Date(data.registrationDeadline),
+          registrationDeadline: {
+            date: new Date(data.registrationDeadline),
+            time: '23:59'
+          },
           entryFee: data.entryFee,
           rules: data.rules,
           rounds: data.rounds,
@@ -186,12 +217,6 @@ export const useCompetitions = defineStore('competitions', {
       }
     },
 
-    getCompetitionById(id: string): Competition | undefined {
-      const competition = this.competitions.find(comp => comp.id === id)
-      console.log('Retrieved competition:', competition)
-      return competition
-    },
-
     async updateCompetition(id: string, data: Partial<CreateCompetitionData>) {
       console.log('Updating competition with data:', data)
       this.loading = true
@@ -211,7 +236,10 @@ export const useCompetitions = defineStore('competitions', {
           location: data.location || currentCompetition.location,
           maxDancers: data.maxDancers ?? currentCompetition.maxDancers,
           description: data.description || currentCompetition.description,
-          registrationDeadline: new Date(data.registrationDeadline || currentCompetition.registrationDeadline),
+          registrationDeadline: {
+            date: new Date(data.registrationDeadline?.date || currentCompetition.registrationDeadline.date),
+            time: data.registrationDeadline?.time || currentCompetition.registrationDeadline.time
+          },
           entryFee: data.entryFee ?? currentCompetition.entryFee,
           rules: data.rules || currentCompetition.rules,
           rounds: data.rounds ?? currentCompetition.rounds,
@@ -260,16 +288,32 @@ export const useCompetitions = defineStore('competitions', {
       }
     },
 
-    async registerForCompetition(competitionId: string, data: any) {
+    migrateExistingDeadlines() {
+      this.competitions = this.competitions.map(comp => {
+        if (!(comp.registrationDeadline instanceof Object)) {
+          return {
+            ...comp,
+            registrationDeadline: {
+              date: new Date(comp.registrationDeadline),
+              time: '23:59'
+            }
+          }
+        }
+        return comp
+      })
+      this.saveToStorage()
+    },
+
+    async registerForCompetition(competitionId: string, registrationData: any) {
       try {
         const competition = this.getCompetitionById(competitionId)
         if (!competition) {
           throw new Error('Competition not found')
         }
 
-        // Check if registration is still open
-        if (new Date() > new Date(competition.registrationDeadline)) {
-          throw new Error('Registration closed')
+        // Check if registration is still open using the new function
+        if (!isRegistrationOpen(competition)) {
+          throw new Error('Registration is closed')
         }
 
         // Check if spots are available
@@ -278,31 +322,25 @@ export const useCompetitions = defineStore('competitions', {
           throw new Error('Competition is full')
         }
 
-        // Check if user is already registered
-        if (competition.registrations?.some(reg => reg.userId === data.userId)) {
-          throw new Error('Already registered for this competition')
-        }
-
+        // Create registration
         const registration = {
-          id: Math.random().toString(36).substr(2, 9),
-          userId: data.userId,
+          id: Math.random().toString(),
           competitionId,
-          personalInfo: data.personalInfo,
-          role: data.role,
-          paymentMethod: data.paymentMethod,
+          userId: registrationData.userId,
+          personalInfo: registrationData.personalInfo,
+          role: registrationData.role,
+          paymentMethod: registrationData.paymentMethod,
           status: 'pending',
           createdAt: new Date()
         }
 
-        // Initialize registrations array if it doesn't exist
+        // Add to competition registrations
         if (!competition.registrations) {
           competition.registrations = []
         }
-
-        // Add registration
         competition.registrations.push(registration)
 
-        // Save to storage
+        // Save to localStorage
         this.saveToStorage()
 
         return registration
@@ -312,4 +350,11 @@ export const useCompetitions = defineStore('competitions', {
       }
     }
   }
-}) 
+})
+
+function isRegistrationOpen(competition: Competition): boolean {
+  const deadline = new Date(competition.registrationDeadline.date)
+  const [hours, minutes] = competition.registrationDeadline.time.split(':')
+  deadline.setHours(parseInt(hours), parseInt(minutes))
+  return new Date() <= deadline
+} 

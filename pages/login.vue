@@ -16,14 +16,20 @@ async function handleLogin() {
     loading.value = true
 
     await auth.login(form.value.email, form.value.password)
-    router.push('/dashboard')
+    
+    // Redirect based on role
+    if (auth.isOrganizer) {
+      router.push('/dashboard/organizer/dashboard_overview')
+    } else if (auth.isJudge) {
+      router.push('/dashboard/judge')
+    } else if (auth.isDancer) {
+      router.push('/dashboard/dancer')
+    } else {
+      router.push('/dashboard')
+    }
   } catch (e) {
     console.error('Login failed:', e)
     error.value = e instanceof Error ? e.message : 'Login failed'
-    
-    if (error.value === 'Invalid password') {
-      form.value.password = ''
-    }
   } finally {
     loading.value = false
   }

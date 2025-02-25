@@ -1,19 +1,19 @@
 <script setup lang="ts">
+import { PlusIcon } from 'lucide-vue-next'
 import { DanceStyle } from '~/types/competition'
 
 definePageMeta({
   layout: 'dashboard',
-  middleware: ['auth', 'organizer']
+  middleware: ['auth']
 })
 
 const auth = useAuth()
 const competitions = useCompetitions()
-const router = useRouter()
 
-// Add role check
-if (auth.user?.role !== 'ORGANIZER') {
-  router.push('/dashboard')
-}
+// Get organizer's competitions
+const organizerCompetitions = computed(() => {
+  return competitions.organizerCompetitions
+})
 
 onMounted(() => {
   competitions.fetchCompetitions()
@@ -40,36 +40,84 @@ function isCompetitionOrganizer(competitionOrganizerId: string) {
 function handleManage(id: string) {
   console.log('Button clicked, ID:', id)
   // The path should be /competitions/[id]/manage, not /dashboard/competitions
-  router.push(`/competitions/${id}/manage`)
+  navigateTo(`/competitions/${id}/manage`)
 }
 </script>
 
 <template>
-  <div class="space-y-8">
-    <div class="flex justify-between items-center">
-      <h1 class="text-2xl font-bold">Organizer Dashboard</h1>
-      <Button @click="navigateTo('/competitions/new')">
-        Create Competition
-      </Button>
-    </div>
-
-    <div v-if="competitions.loading" class="text-center py-8">
-      Loading...
-    </div>
+  <div>
+    <!-- Add the sub-navigation here, before the main content -->
+    <OrganizerSubNav />
     
-    <Alert v-else-if="competitions.error" variant="destructive">
-      {{ competitions.error }}
-    </Alert>
-
-    <template v-else>
-      <div class="space-y-6">
-        <h2 class="text-xl font-semibold">Your Competitions</h2>
-        <div v-if="competitions.organizerCompetitions.length === 0" class="text-center py-8 text-gray-500">
-          No competitions created yet. Click "Create Competition" to get started.
+    <!-- Main content -->
+    <div class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      <!-- Header Section -->
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-3xl font-bold">Organizer Dashboard</h1>
+          <p class="text-gray-500 mt-2">Manage your dance competitions</p>
         </div>
+        <NuxtLink to="/competitions/create">
+          <Button>
+            <PlusIcon class="w-5 h-5 mr-2" />
+            Create Competition
+          </Button>
+        </NuxtLink>
+      </div>
+
+      <!-- Stats Overview -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Competitions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p class="text-3xl font-bold">{{ organizerCompetitions.length }}</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Active Registrations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p class="text-3xl font-bold">
+              {{ organizerCompetitions.reduce((acc, comp) => acc + (comp.registrations?.length || 0), 0) }}
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming Events</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p class="text-3xl font-bold">
+              {{ organizerCompetitions.filter(comp => new Date(comp.date) > new Date()).length }}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <!-- Competitions List -->
+      <div class="space-y-6">
+        <h2 class="text-2xl font-semibold">Your Competitions</h2>
+        
+        <div v-if="organizerCompetitions.length === 0" class="text-center py-12 bg-gray-50 rounded-lg">
+          <div class="space-y-3">
+            <h3 class="text-lg font-medium text-gray-900">No competitions yet</h3>
+            <p class="text-gray-500">Get started by creating your first competition</p>
+            <NuxtLink to="/competitions/create">
+              <Button variant="outline">
+                Create Competition
+              </Button>
+            </NuxtLink>
+          </div>
+        </div>
+
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card 
-            v-for="comp in competitions.organizerCompetitions" 
+            v-for="comp in organizerCompetitions" 
             :key="comp.id"
             class="rounded-lg border bg-card text-card-foreground shadow-sm"
           >
@@ -112,7 +160,7 @@ function handleManage(id: string) {
           </Card>
         </div>
       </div>
-    </template>
+    </div>
   </div>
 </template>
 

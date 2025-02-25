@@ -11,17 +11,15 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuth()
 const competitions = useCompetitions()
-const { $toast } = useNuxtApp()
 
 // Get competition data
-const competitionId = route.params.id as string
 const competition = computed(() => {
-  try {
-    return competitions.getCompetitionById(competitionId)
-  } catch (error) {
-    $toast.error('Failed to load competition')
+  const comp = competitions.getCompetitionById(route.params.id as string)
+  if (!comp) {
+    console.error(`Competition not found: ${route.params.id}`)
     return null
   }
+  return comp
 })
 
 // Helper function to format dance style
@@ -78,6 +76,7 @@ onMounted(async () => {
 })
 
 function handleRegister() {
+  if (!competition.value) return
   router.push(`/competitions/${route.params.id}/register`)
 }
 </script>
@@ -122,6 +121,7 @@ function handleRegister() {
             v-if="!isRegistered" 
             @click="handleRegister"
             class="w-full md:w-auto"
+            :disabled="!competition"
           >
             Register Now
           </Button>

@@ -41,12 +41,12 @@ const danceStyles = [
   { label: 'Other', value: DanceStyle.OTHER }
 ]
 
-// Add rounds options
+// Update roundOptions type
 const roundOptions = [
-  { label: '1 Round', value: 1 },
-  { label: '2 Rounds', value: 2 },
-  { label: '3 Rounds', value: 3 }
-]
+  { label: '1 Round', value: '1' },
+  { label: '2 Rounds', value: '2' },
+  { label: '3 Rounds', value: '3' }
+] as const
 
 const form = ref({
   name: '',
@@ -57,8 +57,8 @@ const form = ref({
   registrationDeadline: '',
   entryFee: 0,
   rules: '',
-  rounds: 3,
-  banner: null as string | null,
+  rounds: '3', // Change to string to match Select component requirements
+  banner: undefined as string | undefined, // Fix banner type
   danceStyle: DanceStyle.BACHATA,
   otherDanceStyle: '',
   paymentMethods: {
@@ -121,8 +121,8 @@ async function handleSubmit() {
       registrationDeadline: form.value.registrationDeadline,
       entryFee: form.value.entryFee,
       rules: form.value.rules,
-      rounds: form.value.rounds,
-      banner: form.value.banner,
+      rounds: parseInt(form.value.rounds), // Convert string to number
+      banner: form.value.banner || undefined, // Handle null case
       danceStyle: form.value.danceStyle === DanceStyle.OTHER 
         ? form.value.otherDanceStyle 
         : form.value.danceStyle,

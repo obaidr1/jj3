@@ -1,8 +1,7 @@
 export enum UserRole {
-  ADMIN = 'ADMIN',
-  ORGANIZER = 'ORGANIZER',
+  DANCER = 'DANCER',
   JUDGE = 'JUDGE',
-  DANCER = 'DANCER'
+  ORGANIZER = 'ORGANIZER'
 }
 
 export interface User {
@@ -10,8 +9,6 @@ export interface User {
   email: string
   name: string
   role: UserRole
-  createdAt: Date
-  updatedAt: Date
 }
 
 export interface Judge extends User {

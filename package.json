@@ -3,13 +3,17 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "nuxt dev --force",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "clean": "rm -rf .nuxt node_modules .cache pnpm-lock.yaml",
+    "clean:all": "rm -rf .nuxt node_modules .cache dist .output pnpm-lock.yaml",
+    "reset": "pnpm clean && pnpm install",
+    "reset:hard": "pnpm clean:all && pnpm install && pnpm dev"
   },
   "dependencies": {
     "@internationalized/date": "^3.7.0",

@@ -1,24 +1,18 @@
-import { useToast as useVueToast } from 'vue-toast-notification'
-import 'vue-toast-notification/dist/theme-sugar.css'
-
 export function useToast() {
-  const toast = useVueToast({
-    position: 'top-right',
-    duration: 3000
-  })
-
   return {
     success(message: string) {
-      toast.success(message)
+      console.log('Success:', message)
+      // You can replace this with your preferred toast implementation
     },
     error(message: string) {
-      toast.error(message)
+      console.error('Error:', message)
+      // You can replace this with your preferred toast implementation
     },
     warning(message: string) {
-      toast.warning(message)
+      console.warn('Warning:', message)
     },
     info(message: string) {
-      toast.info(message)
+      console.info('Info:', message)
     }
   }
 } 

@@ -51,7 +51,7 @@ const isFormValid = computed(() => {
   return hasRequiredFields
 })
 
-async function handleSignUp() {
+async function handleRegister() {
   try {
     error.value = ''
     loading.value = true
@@ -72,14 +72,7 @@ async function handleSignUp() {
       form.value.email,
       form.value.password,
       `${form.value.firstName} ${form.value.lastName}`,
-      form.value.role,
-      {
-        phone: form.value.phone,
-        city: form.value.city,
-        country: form.value.country,
-        instagram: form.value.instagram,
-        danceRoles: form.value.danceRoles
-      }
+      form.value.role
     )
 
     router.push('/dashboard')
@@ -94,7 +87,7 @@ async function handleSignUp() {
 <template>
   <div class="min-h-screen flex flex-col items-center justify-center">
     <Card class="w-full max-w-md p-6">
-      <form @submit.prevent="handleSignUp" class="space-y-6">
+      <form @submit.prevent="handleRegister" class="space-y-6">
         <div class="space-y-2 text-center">
           <h1 class="text-3xl font-bold">Create Account</h1>
           <p class="text-gray-500">Enter your details to register</p>

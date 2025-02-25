@@ -3,13 +3,18 @@ import { DanceStyle } from '~/types/competition'
 
 const props = defineProps<{
   competition: Competition
+  showManageButton?: boolean
+}>()
+
+const emit = defineEmits<{
+  manage: [id: string]
 }>()
 
 const router = useRouter()
 const auth = useAuth()
 
 function handleViewDetails() {
-  router.push(`/competition/${props.competition.id}`)
+  router.push(`/competitions/${props.competition.id}`)
 }
 
 // Helper function to format dance style
@@ -27,11 +32,15 @@ function formatDanceStyle(style: string) {
 
 // Get registration status text and color
 function getCompetitionStatus(comp: Competition) {
-  if (new Date() > new Date(comp.registrationDeadline)) {
-    return { text: 'Registration Closed', color: 'text-gray-500' }
+  const deadline = new Date(comp.registrationDeadline.date)
+  const [hours, minutes] = comp.registrationDeadline.time.split(':')
+  deadline.setHours(parseInt(hours), parseInt(minutes))
+  
+  if (new Date() > deadline) {
+    return { text: 'Registration Closed', color: 'text-destructive' }
   }
   if (comp.maxDancers > 0 && (comp.registrations?.length || 0) >= comp.maxDancers) {
-    return { text: 'Sold Out', color: 'text-destructive' }
+    return { text: 'Competition Full', color: 'text-destructive' }
   }
   return { text: 'Open for Registration', color: 'text-green-600' }
 }
@@ -82,6 +91,15 @@ function getCompetitionStatus(comp: Competition) {
     <!-- Button Section -->
     <div class="flex items-center p-6 pt-0">
       <Button 
+        v-if="showManageButton"
+        variant="outline" 
+        class="w-full"
+        @click="emit('manage', competition.id)"
+      >
+        Manage
+      </Button>
+      <Button 
+        v-else
         variant="outline" 
         class="w-full"
         @click="handleViewDetails"

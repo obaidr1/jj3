@@ -20,30 +20,45 @@ interface AuthState {
   isAuthenticated: boolean
 }
 
-// Initial test user
-const TEST_USER: User = {
+// Initial test user - keep this consistent
+const TEST_USER = {
   id: '1',
   email: 'test@example.com',
-  password: 'test123', // In real app, this would be hashed
+  password: 'test123',
   name: 'Test User',
-  role: UserRole.DANCER,
-  createdAt: new Date(),
-  updatedAt: new Date()
+  role: UserRole.ORGANIZER
 }
 
+// Initial test user
+const DEFAULT_USERS = [{
+  id: '1',
+  email: 'test@example.com',
+  password: 'test123',
+  name: 'Test User',
+  role: UserRole.ORGANIZER
+}]
+
 export const useAuth = defineStore('auth', {
-  state: (): AuthState => ({
-    user: null,
-    users: [TEST_USER], // Initialize with test user
-    token: null,
-    refreshToken: null,
+  state: () => ({
+    isAuthenticated: false,
+    user: null as {
+      id: string;
+      name: string;
+      email: string;
+      role: UserRole;
+    } | null,
+    users: [] as Array<{
+      id: string;
+      email: string;
+      password: string;
+      name: string;
+      role: UserRole;
+    }>,
     loading: false,
-    error: null,
-    isAuthenticated: false
+    error: null as string | null
   }),
 
   getters: {
-    userRole: (state) => state.user?.role,
     isAdmin: (state) => state.user?.role === UserRole.ADMIN,
     isJudge: (state) => state.user?.role === UserRole.JUDGE,
     isOrganizer: (state) => state.user?.role === UserRole.ORGANIZER,
@@ -51,122 +66,106 @@ export const useAuth = defineStore('auth', {
   },
 
   actions: {
+    initializeFromStorage() {
+      // Load users
+      const storedUsers = localStorage.getItem('users')
+      this.users = storedUsers ? JSON.parse(storedUsers) : DEFAULT_USERS
+      
+      // Load current user
+      const storedUser = localStorage.getItem('user')
+      if (storedUser) {
+        this.user = JSON.parse(storedUser)
+        this.isAuthenticated = true
+      }
+    },
+
+    async login(email: string, password: string) {
+      try {
+        this.loading = true
+        this.error = null
+
+        const user = this.users.find(u => u.email === email && u.password === password)
+        
+        if (user) {
+          const userData = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+          }
+          
+          this.user = userData
+          this.isAuthenticated = true
+          localStorage.setItem('user', JSON.stringify(userData))
+          
+          return userData
+        }
+        
+        throw new Error('Invalid credentials')
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Login failed'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async logout() {
+      try {
+        this.loading = true
+        this.user = null
+        this.isAuthenticated = false
+        localStorage.removeItem('user')
+        await navigateTo('/login')
+      } catch (error) {
+        console.error('Logout error:', error)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    register(email: string, password: string, name: string, role: UserRole) {
+      // Check if user already exists
+      if (this.users.some(u => u.email === email)) {
+        throw new Error('User with this email already exists')
+      }
+
+      // Create new user
+      const newUser = {
+        id: Math.random().toString(),
+        email,
+        password,
+        name,
+        role
+      }
+
+      // Add to users array
+      this.users.push(newUser)
+      
+      // Save users to localStorage
+      localStorage.setItem('users', JSON.stringify(this.users))
+
+      // Log the user in
+      const userData = {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role
+      }
+      
+      this.user = userData
+      this.isAuthenticated = true
+      localStorage.setItem('user', JSON.stringify(userData))
+
+      return userData
+    },
+
     setError(error: AuthError | null) {
       this.error = error
     },
 
     clearError() {
       this.error = null
-    },
-
-    async login(email: string, password: string) {
-      this.loading = true
-      this.clearError()
-      
-      try {
-        // First check if user exists
-        const user = this.users.find(u => u.email === email)
-        if (!user) {
-          throw new Error('No account found with this email')
-        }
-
-        // Then check password separately
-        if (user.password !== password) {
-          throw new Error('Invalid password')
-        }
-
-        // If both checks pass, proceed with login
-        this.user = { ...user, password: undefined }
-        this.isAuthenticated = true
-        this.saveToStorage()
-        return user
-      } catch (error) {
-        console.error('Login error:', error)
-        throw error // Re-throw to handle in the component
-      } finally {
-        this.loading = false
-      }
-    },
-
-    async register(email: string, password: string, name: string, role: UserRole, additionalInfo?: any) {
-      this.loading = true
-      this.clearError()
-      
-      try {
-        // Validate email
-        if (!email || !email.includes('@')) {
-          throw new Error('Please enter a valid email address')
-        }
-
-        // Check if user already exists - make sure to check case-insensitive
-        const existingUser = this.users.find(u => 
-          u.email.toLowerCase() === email.toLowerCase()
-        )
-        
-        if (existingUser) {
-          throw new Error('An account with this email already exists')
-        }
-
-        // Create new user
-        const newUser: User = {
-          id: Math.random().toString(36).substr(2, 9),
-          email,
-          password,
-          name,
-          role,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          ...additionalInfo
-        }
-        
-        // Add to users array
-        this.users.push(newUser)
-        
-        // Set current user (without password)
-        this.user = { ...newUser, password: undefined }
-        this.isAuthenticated = true
-        this.saveToStorage()
-
-        return newUser
-      } catch (error) {
-        console.error('Registration error:', error)
-        throw error // Re-throw to handle in the component
-      } finally {
-        this.loading = false
-      }
-    },
-
-    saveToStorage() {
-      if (this.user) {
-        localStorage.setItem('user', JSON.stringify(this.user))
-        localStorage.setItem('users', JSON.stringify(this.users))
-      }
-    },
-
-    initializeFromStorage() {
-      const storedUser = localStorage.getItem('user')
-      const storedUsers = localStorage.getItem('users')
-
-      if (storedUsers) {
-        this.users = JSON.parse(storedUsers)
-      }
-
-      if (storedUser) {
-        this.user = JSON.parse(storedUser)
-        this.isAuthenticated = true
-      }
-
-      // Ensure we always have at least the test user
-      if (this.users.length === 0) {
-        this.users = [TEST_USER]
-      }
-    },
-
-    logout() {
-      this.user = null
-      this.isAuthenticated = false
-      localStorage.removeItem('user')
-      return navigateTo('/login')
     },
 
     async checkAuth() {
@@ -252,7 +251,7 @@ export const useAuth = defineStore('auth', {
     },
 
     getUserById(id: string) {
-      return this.users.find(u => u.id === id) || null
+      return this.users.find(u => u.id === id)
     }
   }
 }) 

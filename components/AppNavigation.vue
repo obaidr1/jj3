@@ -1,5 +1,29 @@
 <script setup lang="ts">
 const auth = useAuth()
+const router = useRouter()
+
+function getDashboardPath() {
+  if (auth.isDancer) return '/dashboard/dancer'
+  if (auth.isJudge) return '/dashboard/judge'
+  if (auth.isOrganizer) return '/dashboard/organizer/dashboard_overview'
+  return '/dashboard'
+}
+
+async function handleLogout() {
+  try {
+    await auth.logout()
+    await router.push('/login')
+  } catch (error) {
+    console.error('Logout failed:', error)
+  }
+}
+
+function handleDashboardClick() {
+  if (auth.isOrganizer) {
+    router.push('/dashboard/organizer')
+  }
+  // ... other conditions ...
+}
 </script>
 
 <template>
@@ -12,16 +36,27 @@ const auth = useAuth()
           </NuxtLink>
         </div>
         
-        <div class="flex items-center">
+        <div class="flex items-center space-x-4">
           <template v-if="auth.isAuthenticated">
             <NuxtLink 
-              to="/dashboard" 
+              v-if="auth.isOrganizer"
+              to="/dashboard/organizer/dashboard_overview"
+              class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+            >
+              Organizer Dashboard
+            </NuxtLink>
+            <NuxtLink 
+              :to="getDashboardPath()"
               class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
             >
               Dashboard
             </NuxtLink>
-            <Button variant="ghost" @click="auth.logout">
-              Logout
+            <Button 
+              variant="ghost" 
+              @click="handleLogout"
+              :disabled="auth.loading"
+            >
+              {{ auth.loading ? 'Logging out...' : 'Logout' }}
             </Button>
           </template>
           <template v-else>
@@ -42,9 +77,4 @@ const auth = useAuth()
       </div>
     </div>
   </nav>
-  <NavigationMenuItem v-if="auth.isOrganizer">
-    <NuxtLink to="/dashboard/organizer">
-      Organizer Dashboard
-    </NuxtLink>
-  </NavigationMenuItem>
 </template> 
