@@ -8,3 +8,4 @@
 - The pages should be composed of components with parameters that accept the copy.
 - The html should be in the components.
 - When needed, use shadcn-vue components.
+- For root routes always create route-folder and index.vue file, i.e. instead of organizers.vue create organizers/index.vue.
