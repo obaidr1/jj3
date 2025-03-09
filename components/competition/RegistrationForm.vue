@@ -36,7 +36,7 @@ async function handleSubmit() {
     })
 
     $toast.success('Registration successful!')
-    await router.push('/dashboard/my-competitions')
+    await router.push('/dashboard')
   } catch (e) {
     console.error('Registration error:', e)
     $toast.error(e instanceof Error ? e.message : 'Registration failed')

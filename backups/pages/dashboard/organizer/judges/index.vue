@@ -1,16 +1,6 @@
 <script setup lang="ts">
 import { PlusIcon } from 'lucide-vue-next'
 import OrganizerSubNav from '~/components/organizer/OrganizerSubNav.vue'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '~/components/ui/table'
-import { Card } from '~/components/ui/card'
-import { Badge } from '~/components/ui/badge'
 
 definePageMeta({
   layout: 'dashboard',
@@ -35,7 +25,7 @@ const judges = ref([
           <p class="text-gray-500 mt-2">Manage your competition judges</p>
         </div>
         <Button>
-          <Icon name="heroicons:plus" class="w-5 h-5 mr-2" />
+          <PlusIcon class="w-5 h-5 mr-2" />
           Add Judge
         </Button>
       </div>

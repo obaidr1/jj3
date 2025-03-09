@@ -49,7 +49,7 @@ interface Registration {
   createdAt: Date
 }
 
-interface CreateCompetitionData {
+export interface CreateCompetitionData {
   name: string
   date: string
   location: string

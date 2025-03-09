@@ -10,10 +10,9 @@ const auth = useAuth()
 const router = useRouter()
 const competitions = useCompetitions()
 
+// Always initialize competitions from storage
 onMounted(() => {
-  if (competitions.competitions.length === 0) {
-    competitions.initializeFromStorage()
-  }
+  competitions.initializeFromStorage()
 })
 
 // Helper function to format dance style

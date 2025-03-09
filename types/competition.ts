@@ -4,5 +4,5 @@ export enum DanceStyle {
   WESTCOAST_SWING = 'WESTCOAST_SWING',
   SALSA = 'SALSA',
   KIZOMBA = 'KIZOMBA',
-  OTHER = 'OTHER'
+  OTHER = 'OTHER',
 } 

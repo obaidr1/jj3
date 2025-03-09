@@ -167,7 +167,7 @@ async function handleSubmit() {
     // Show success message and redirect
     const toast = useToast()
     toast.success('Successfully registered for competition!')
-    router.push('/dashboard/my-competitions')
+    router.push('/dashboard')
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Registration failed'
     console.error('Registration error:', e)

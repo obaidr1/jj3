@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 const auth = useAuth()
 const router = useRouter()
 
@@ -9,8 +10,11 @@ const navigation = computed(() => {
 
   if (auth.isOrganizer) {
     items.push(
-      { name: 'Competitions', href: '/competitions', icon: 'i-heroicons-trophy' },
-      { name: 'Judges', href: '/dashboard/judges', icon: 'i-heroicons-users' }
+      { name: 'My Competitions', href: '/dashboard/organizer', icon: 'i-heroicons-trophy' },
+      { name: 'Dancers', href: '/dashboard/organizer/dancers', icon: 'i-heroicons-user-group' },
+      { name: 'Judges', href: '/dashboard/organizer/judges', icon: 'i-heroicons-users' },
+      { name: 'Results', href: '/dashboard/organizer/results', icon: 'i-heroicons-chart-bar' },
+      { name: 'Settings', href: '/dashboard/organizer/settings', icon: 'i-heroicons-cog-6-tooth' }
     )
   }
 
@@ -22,7 +26,7 @@ const navigation = computed(() => {
 
   if (auth.isDancer) {
     items.push(
-      { name: 'My Competitions', href: '/dashboard/my-competitions', icon: 'i-heroicons-calendar' },
+      { name: 'My Competitions', href: '/dashboard', icon: 'i-heroicons-calendar' },
       { name: 'Results', href: '/dashboard/results', icon: 'i-heroicons-chart-bar' }
     )
   }

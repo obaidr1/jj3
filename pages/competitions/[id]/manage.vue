@@ -1,19 +1,20 @@
 <script setup lang="ts">
+import type { CreateCompetitionData } from '../../../composables/useCompetitions'
+import { DanceStyle } from '../../../types/competition'
+import { useWebSocket } from '../../../composables/useWebSocket'
+import { ref, computed, watchEffect, watch, onUnmounted } from '#imports'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
-import { DanceStyle } from '~/types/competition' // Ensure this type is defined
-import { useWebSocket } from '~/composables/useWebSocket'
-import { ref, computed, watchEffect, watch, onUnmounted } from 'vue'
+} from '#components'
+import { Checkbox } from '#components'
+import { Label } from '#components'
+import { Input } from '#components'
+import { Textarea } from '#components'
+import { Button } from '#components'
 
 definePageMeta({
   layout: 'dashboard',
@@ -57,7 +58,7 @@ watchEffect(() => {
 
   if (!competition.value) {
     // Possibly fetch from the API if not found in store
-    competitions.fetchAllCompetitions().then(() => {
+    competitions.fetchCompetitions().then(() => {
       if (!competitions.getCompetitionById(competitionId)) {
         console.warn("Still not found. Check server data.")
       }
@@ -209,36 +210,39 @@ watch(
 async function handleSubmit() {
   loading.value = true
   try {
-    const formData = new FormData()
-    formData.append('name', form.value.name)
-    formData.append('date', form.value.date)
-    formData.append('location', form.value.location)
-    formData.append('maxDancers', form.value.maxDancers.toString())
-    formData.append('description', form.value.description)
-    formData.append(
-      'registrationDeadline',
-      form.value.registrationDeadline
-        ? new Date(form.value.registrationDeadline).toISOString()
-        : ''
-    )
-    formData.append('entryFee', form.value.entryFee.toString())
-    formData.append('rules', form.value.rules)
-    formData.append('rounds', form.value.rounds.toString())
-    formData.append('danceStyle', form.value.danceStyle)
-    formData.append('otherDanceStyle', form.value.otherDanceStyle)
-    formData.append('paymentMethods', JSON.stringify(form.value.paymentMethods))
-
-    if (bannerFile.value) {
-      formData.append('banner', bannerFile.value)
+    const updateData: Partial<CreateCompetitionData> = {
+      name: form.value.name,
+      date: form.value.date,
+      location: form.value.location,
+      maxDancers: form.value.maxDancers,
+      description: form.value.description,
+      registrationDeadline: form.value.registrationDeadline,
+      entryFee: form.value.entryFee,
+      rules: form.value.rules,
+      rounds: form.value.rounds,
+      danceStyle: form.value.danceStyle,
+      paymentMethods: form.value.paymentMethods,
+      banner: form.value.banner // Keep existing banner if no new file
     }
 
-    await competitions.updateCompetition(route.params.id as string, formData)
+    if (bannerFile.value) {
+      // Convert banner file to base64 and wait for it to complete
+      updateData.banner = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = (e) => resolve(e.target?.result as string)
+        reader.onerror = (e) => reject(e)
+        reader.readAsDataURL(bannerFile.value!)
+      })
+    }
 
+    // Update competition with all data including banner
+    await competitions.updateCompetition(route.params.id as string, updateData)
+    
     // Force the store to refresh so it gets the new banner from the server
-    await competitions.fetchAllCompetitions()
-    // Alternatively, if you have a dedicated fetchOneCompetition:
-    // await competitions.fetchOneCompetition(route.params.id as string)
-
+    await competitions.fetchCompetitions()
+    
+    // Redirect to organizer dashboard after successful save
+    router.push('/dashboard/organizer')
   } catch (error) {
     console.error('Error updating competition:', error)
   } finally {
@@ -281,6 +285,16 @@ const { ws } = useWebSocket()
 onUnmounted(() => {
   console.log('Manage.vue is unmounting...')
 })
+
+// Navigation routes for organizer dashboard
+const routes = {
+  dashboard: '/dashboard',
+  organizer: '/dashboard/organizer',
+  dancers: '/dashboard/organizer/dancers',
+  judges: '/dashboard/organizer/judges',
+  results: '/dashboard/organizer/results',
+  settings: '/dashboard/organizer/settings'
+}
 </script>
 
 <template>
