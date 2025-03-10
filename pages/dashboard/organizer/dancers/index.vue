@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import OrganizerSubNav from '~/components/organizer/OrganizerSubNav.vue'
+import type { User } from '~/types/user'
+import type { Registration } from '~/composables/useCompetitions'
 
 definePageMeta({
   layout: 'dashboard',
@@ -11,17 +13,23 @@ const competitions = useCompetitions()
 
 // Get all dancers from organizer's competitions
 const registeredDancers = computed(() => {
-  const dancers = new Set()
+  const dancers = new Set<{
+    id: string
+    name: string
+    email: string
+    competitionName: string
+    registrationDate: Date
+  }>()
   
   competitions.organizerCompetitions.forEach(comp => {
-    comp.registrations?.forEach(reg => {
-      if (reg.dancerId) {
-        const dancer = auth.getUserById(reg.dancerId)
+    comp.registrations?.forEach((reg: Registration) => {
+      if (reg.userId) {
+        const dancer = auth.getUserById(reg.userId) as User
         if (dancer) {
           dancers.add({
             ...dancer,
             competitionName: comp.name,
-            registrationDate: reg.registrationDate
+            registrationDate: reg.createdAt
           })
         }
       }

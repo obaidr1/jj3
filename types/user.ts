@@ -1,14 +1,38 @@
 export enum UserRole {
   DANCER = 'DANCER',
-  JUDGE = 'JUDGE',
-  ORGANIZER = 'ORGANIZER'
+  ORGANIZER = 'ORGANIZER',
+  JUDGE = 'JUDGE'
+}
+
+export interface PersonalInfo {
+  phone: string
+  city: string
+  country: string
+  instagram?: string
+}
+
+export interface Agreements {
+  rules: boolean
+  photoConsent: boolean
+}
+
+export interface RegistrationForm {
+  name: string
+  email: string
+  password: string
+  role: UserRole
+  personalInfo: PersonalInfo
+  agreements: Agreements
 }
 
 export interface User {
   id: string
-  email: string
   name: string
+  email: string
   role: UserRole
+  personalInfo: PersonalInfo
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Judge extends User {

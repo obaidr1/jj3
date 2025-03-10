@@ -5,7 +5,9 @@
     "strict": true,
     "types": ["@pinia/nuxt"],
     "paths": {
-      "#imports": ["./.nuxt/types/imports"]
+      "#imports": ["./.nuxt/types/imports"],
+      "~/*": ["./*"],
+      "@/*": ["./*"]
     }
   }
 }
