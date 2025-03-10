@@ -35,7 +35,23 @@ export interface User {
   updatedAt: string
 }
 
+export interface JudgeApplication {
+  id: string
+  judgeId: string
+  competitionId: string
+  status: 'pending' | 'accepted' | 'rejected'
+  createdAt: Date
+  updatedAt: Date
+  experience: string
+  specialties: string[]
+  bio: string
+}
+
 export interface Judge extends User {
+  applications: JudgeApplication[]
+  experience: string
+  specialties: string[]
+  bio: string
   competitions: string[] // Competition IDs they're judging
   isHeadJudge?: boolean
 }

@@ -5,7 +5,11 @@ const router = useRouter()
 
 const navigation = computed(() => {
   const items = [
-    { name: 'Overview', href: '/dashboard', icon: 'i-heroicons-home' }
+    { 
+      name: 'Overview', 
+      href: auth.isJudge ? '/dashboard/judge' : '/dashboard', 
+      icon: 'i-heroicons-home' 
+    }
   ]
 
   if (auth.isOrganizer) {

@@ -28,6 +28,8 @@ interface Competition {
   }
   updatedAt: Date
   registrations?: Registration[]
+  judgeApplications?: JudgeApplication[]
+  judges?: string[] // Array of judge user IDs
 }
 
 interface Registration {
@@ -47,6 +49,18 @@ interface Registration {
   paymentMethod: 'paypal' | 'stripe' | 'cash'
   status: 'pending' | 'confirmed' | 'cancelled'
   createdAt: Date
+}
+
+interface JudgeApplication {
+  id: string
+  judgeId: string
+  competitionId: string
+  status: 'pending' | 'accepted' | 'rejected'
+  experience: string
+  specialties: string[]
+  bio: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface CreateCompetitionData {
@@ -126,7 +140,7 @@ const DEFAULT_COMPETITIONS = [
 
 export const useCompetitions = defineStore('competitions', {
   state: () => ({
-    competitions: [] as any[],
+    competitions: [] as Competition[],
     loading: false,
     error: null as string | null
   }),
@@ -346,6 +360,83 @@ export const useCompetitions = defineStore('competitions', {
         return registration
       } catch (error) {
         console.error('Registration error:', error)
+        throw error
+      }
+    },
+
+    async applyAsJudge(competitionId: string, applicationData: Partial<JudgeApplication>) {
+      try {
+        const competition = this.getCompetitionById(competitionId)
+        if (!competition) {
+          throw new Error('Competition not found')
+        }
+
+        // Check if already applied
+        if (competition.judgeApplications?.some(app => app.judgeId === applicationData.judgeId)) {
+          throw new Error('You have already applied for this competition')
+        }
+
+        // Create new application
+        const newApplication: JudgeApplication = {
+          id: Math.random().toString(),
+          judgeId: applicationData.judgeId || '',
+          competitionId,
+          status: 'pending',
+          experience: applicationData.experience || '',
+          specialties: applicationData.specialties || [],
+          bio: applicationData.bio || '',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+
+        // Add to competition's applications
+        if (!competition.judgeApplications) {
+          competition.judgeApplications = []
+        }
+        competition.judgeApplications.push(newApplication)
+
+        // Save to localStorage
+        this.saveToStorage()
+
+        return newApplication
+      } catch (error) {
+        console.error('Failed to apply as judge:', error)
+        throw error
+      }
+    },
+
+    async updateJudgeApplicationStatus(competitionId: string, applicationId: string, status: JudgeApplication['status']) {
+      try {
+        const competition = this.getCompetitionById(competitionId)
+        if (!competition) {
+          throw new Error('Competition not found')
+        }
+
+        const application = competition.judgeApplications?.find(app => app.id === applicationId)
+        if (!application) {
+          throw new Error('Application not found')
+        }
+
+        // Update application status
+        application.status = status
+        application.updatedAt = new Date()
+
+        // If accepted, add judge to competition's judges array
+        if (status === 'accepted') {
+          if (!competition.judges) {
+            competition.judges = []
+          }
+          if (!competition.judges.includes(application.judgeId)) {
+            competition.judges.push(application.judgeId)
+          }
+        }
+
+        // Save to localStorage
+        this.saveToStorage()
+
+        return application
+      } catch (error) {
+        console.error('Failed to update judge application status:', error)
         throw error
       }
     }
